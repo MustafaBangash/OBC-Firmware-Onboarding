@@ -29,6 +29,7 @@ error_code_t lm75bdInit(lm75bd_config_t *config)
 
 error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
 {
+  error_code_t errCode;
 
   if (temp == NULL)
   {
@@ -38,17 +39,13 @@ error_code_t readTempLM75BD(uint8_t devAddr, float *temp)
   // set pointer register to read the tempurature data
   uint8_t ptrRegister = 0x00;
 
-  i2cSendTo(devAddr, &ptrRegister, 1);
+  RETURN_IF_ERROR_CODE(i2cSendTo(devAddr, &ptrRegister, 1));
 
   // 2 bytes to store 2's compliment data
   uint8_t sensorReading[2];
 
   // read the data from the sensor
-  if (i2cReceiveFrom(devAddr, sensorReading, 2) != ERR_CODE_SUCCESS)
-  {
-    return ERR_CODE_INVALID_STATE; // Handle error in communication
-  }
-
+  RETURN_IF_ERROR_CODE(i2cReceiveFrom(devAddr, sensorReading, sizeof(sensorReading)));
   // combine the bits into one 16 bit integer
   int16_t combined = (int16_t)(sensorReading[0] << 8 | sensorReading[1]);
 
